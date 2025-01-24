@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic To-Do App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .todo-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .todo-form input, .todo-form button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+        .todo-list {
+            list-style: none;
+            padding: 0;
+        }
+        .todo-list li {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f9f9f9;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="todo-container">
+        <h1>Dynamic To-Do App</h1>
+        <form class="todo-form" onsubmit="addTodo(); return false;">
+            <label for="todo-date">Select Date:</label>
+            <input type="date" id="todo-date" required>
+            <input type="text" id="todo-text" placeholder="Enter your to-do" required>
+            <button type="submit">Add To-Do</button>
+        </form>
+        <h2>To-Dos</h2>
+        <ul class="todo-list" id="todo-list"></ul>
+    </div>
+    <script>
+        const apiUrl = '/api/todos';
+
+        async function fetchTodos(date) {
+            const response = await fetch(`${apiUrl}?date=${date}`);
+            const todos = await response.json();
+            const todoList = document.getElementById('todo-list');
+            todoList.innerHTML = '';
+            todos.forEach(todo => {
+                const li = document.createElement('li');
+                li.textContent = todo;
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteTodo(date, todo);
+                li.appendChild(deleteButton);
+                todoList.appendChild(li);
+            });
+        }
+
+        async function addTodo() {
+            const date = document.getElementById('todo-date').value;
+            const text = document.getElementById('todo-text').value;
+
+            if (!date || !text) return alert('Please provide both date and to-do text.');
+
+            await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, todo: text }),
+            });
+
+            document.getElementById('todo-text').value = '';
+            fetchTodos(date);
+        }
+
+        async function deleteTodo(date, todo) {
+            await fetch(apiUrl, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, todo }),
+            });
+
+            fetchTodos(date);
+        }
+
+        document.getElementById('todo-date').addEventListener('change', (e) => {
+            fetchTodos(e.target.value);
+        });
+    </script>
+</body>
+</html>
