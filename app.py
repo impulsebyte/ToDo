@@ -72,4 +72,5 @@ def delete_todo():
     return jsonify({"error": "Todo not found"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    gunicorn app:app
